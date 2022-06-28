@@ -95,4 +95,24 @@
 
 **EC2 Instance Purchase option and pricing**
 - **EC2 - On Demand**
-  -
+  - Per second billing while an instance is running.  So you are paying for the resources you consume. Associated resources such as storage, are charged regardless of instance state. 
+  - It is the Default purchase option so you should start your evaluation process. Start with On-demand and then move to other instance type if you can justify.
+  - There are no interruptions and you launch and instance and you pay per second charge. Barring any failures the instance runs until you decide otherwise. 
+  - You dont receive any capacity reservations with On-Demand.
+  - If AWS has a major failure and capacity is limited, Reserved purchase options receives highest provisioning priority on whatever capacity remains.
+  - Recommended for short-term and un-interrupted workloads, where you can't predict how the application will behave
+
+**EC2 - Reserved Instance**
+- RESERVED is for long-term consistent usage of EC2.
+- They are a commitment made to AWS for long term consumption of EC2 resources. 
+- Ideal for components of your infrastructure which have known usage, requires consistent access to compute and you require this on a long term basis.
+- Scheduled Reserved Instance
+- Ideal for long term usage which does not run constantly
+- Does not support all instance types or regions
+- Minimum requirement 1200 hours per year and 1 year term.
+- Capacity Reserved instance
+-Regional reservation provides a billing discount for valid instances launched in any AZ in that region. While flexible they dont reserve capacity within an AZ. This is risky during major faults, when capacity can be limited.
+- Zonal reservations only apply to one AZ providing billing discounts and capacity reservation in that AZ.
+-  On Demand capacity reservations can be booked to ensure you always have access to capacity in an AZ when you need it. With on-demand capacity reservation you're booking capacity in a specific availability zone and you always pay for that capacity regardless of if you consume it.
+
+
