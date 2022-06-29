@@ -103,16 +103,113 @@
   - Recommended for short-term and un-interrupted workloads, where you can't predict how the application will behave
 
 **EC2 - Reserved Instance**
-- RESERVED is for long-term consistent usage of EC2.
-- They are a commitment made to AWS for long term consumption of EC2 resources. 
-- Ideal for components of your infrastructure which have known usage, requires consistent access to compute and you require this on a long term basis.
-- Scheduled Reserved Instance
-- Ideal for long term usage which does not run constantly
+- Ensure you keep the instance for 1 year (+discount) or 3 years (+++discount), Minimum requirement 1200 hours per year and 1 year term.
+- Reserved instances takes priority for AZ capacity. 
 - Does not support all instance types or regions
-- Minimum requirement 1200 hours per year and 1 year term.
-- Capacity Reserved instance
--Regional reservation provides a billing discount for valid instances launched in any AZ in that region. While flexible they dont reserve capacity within an AZ. This is risky during major faults, when capacity can be limited.
-- Zonal reservations only apply to one AZ providing billing discounts and capacity reservation in that AZ.
--  On Demand capacity reservations can be booked to ensure you always have access to capacity in an AZ when you need it. With on-demand capacity reservation you're booking capacity in a specific availability zone and you always pay for that capacity regardless of if you consume it.
+- Great if you have a known **stead state usage**, email, domain ot database server. Cheapest option with no tolerance for disruption.
+- Up to 72% discount compared to On-demand
+- Payment Options – No Upfront (+), Partial Upfront (++), All Upfront (+++)
+- **Scheduled Reserved Instance**
+  - Ideal for long term usage which does not run constantly
+  - Does not support all instance types or regions
+  - Minimum requirement 1200 hours per year and 1 year term.
+- **Capacity Reserved instance**
+- **Regional reservation** provides a billing discount for valid instances launched in any AZ in that region. While flexible they dont reserve capacity within an AZ. This is risky during major faults, when capacity can be limited.
+- **Zonal reservations** only apply to one AZ providing billing discounts and capacity reservation in that AZ.
+- You can buy and sell in the Reserved Instance Marketplace
+- Convertible Reserved Instance
+  - Can change the EC2 instance type, instance family, OS, scope and tenancy
+  - Up to 66% discount
+- **Note**: Reserved Instances that are terminated are billed until the end of their term.
 
 
+
+**EC2 Savings Plans**
+- Get discount based on long-term usage (up to 72% - same as Reserved Instance)
+- Commit to a certain type of usage ($10/hour for 1 or 3 years) and get houly rate commitment
+- Usage beyond EC2 Savings Plans is billed at the On-Demand price
+- Locked to a specific instance family & AWS region (e.g., M5 in us-east-1)
+- Flexible across:
+  - Instance Size (e.g., m5.xlarge, m5.2xlarge)
+  - OS (e.g., Linux, Windows)
+  - Tenancy (Host, Dedicated, Default)
+
+**EC2 - Spot Instance**
+- It is the cheapest way to get access to EC2 
+- Never use spot instances for workload that cannot handle interruptions. 
+- If a spot instance is terminated by Amazon you will not be charged for partial hour of usage. However if you terminate the instance you will be charged.
+- **Spot Block**
+  - “block” spot instance during a specified time frame (1 to 6 hours) without interruptions
+  - In rare situations, the instance may be reclaimed
+
+**Spot Fleets**
+- Spot Fleets = set of Spot Instances + (optional) On-Demand Instances
+- The Spot Fleet will try to meet the target capacity with price constraints
+  - Define possible launch pools: instance type (m5.large), OS, Availability Zone
+  - Can have multiple launch pools, so that the fleet can choose
+  - Spot Fleet stops launching instances when reaching capacity or max cost
+- Strategies to allocate Spot Instances:
+  - lowestPrice: from the pool with the lowest price (cost optimization, short workload)
+  - diversified: distributed across all pools (great for availability, long workloads)
+  - capacityOptimized: pool with the optimal capacity for the number of instances
+- Spot Fleets allow us to automatically request Spot Instances with the lowest price
+
+**EC2 - Dedicated hosts**
+- This is an EC2 host which is allocated to you in its entirety. 
+- No Charge for the instances running on the host
+- Normally used where you have software which is licensed based on sockets or cores in a physical machine.
+- Dedicated hosts also have a feature called Host Affinity linking instances to certain EC2 hosts.So if you stop and start an instance it remains on the same host.
+
+**EC2 - Dedicated Instances**
+- Instances run on hardware that’s dedicated to you
+- May share hardware with other instances in same account
+- No control over instance placement(can move hardware after Stop / Start)
+
+**Standard Reserved vs. Convertible Reserved vs. Scheduled Reserved:**
+Standard Reserved Instances have inflexible reservations that are discounted at 75% off of On-Demand instances. Standard Reserved Instances cannot be moved between regions. You can choose if a Reserved Instance applies to either a specific Availability Zone, or an Entire Region, but you cannot change the region.
+Convertible Reserved Instances are instances that are discounted at 54% off of On-Demand instances, but you can also modify the instance type at any point. For example, you suspect that after a few months your VM might need to change from general purpose to memory optimized, but you aren't sure just yet. So if you think that in the future you might need to change your VM type or upgrade your VMs capacity, choose Convertible Reserved Instances. There is no downgrading instance type with this option though.
+Scheduled Reserved Instances are reserved according to a specified timeline that you set. For example, you might use Scheduled Reserved Instances if you run education software that only needs to be available during school hours. This option allows you to better match your needed capacity with a recurring schedule so that you can save money.
+
+**EC2 Placement Groups**
+benefits and limitations of the three placement groups available within AWS :
+  **Cluster Placement Groups (PERFORMANCE)** 
+  - Clusters instances into a low-latency group in a single Availability Zone
+  - This is recommended for applications that need the lowest latency possible and require the highest network throughput.
+  - Only certain instances can be launched into this group (compute optimized, GPU optimized, storage optimized, and memory optimized).
+  - It offers little to no resilience.
+**** YOU CANNOT span Availability zones with clusters  placement groups. ONE AZ ONLY This is locked when launching the first instance. You can span VPC peers but this does significantly impact performance in a negative way.****
+
+  **Spread Placement Groups (Resilience)** 
+  - Designed to ensure maximum amount of availability and resilience for an application.
+  - It can SPAM MULTIPLE AZ
+  - There is limit of **7 instances per AZ and per placement group**
+  - THEY PROVIDE INFRASTRUCTURE ISOLATION
+  - Each Instance runs from a different physical hardware .i.e. different rack and each rack has its own network and power source.
+
+  **Partition Placement Groups (Topology Awareness)** - groups of instances spread apart
+  - Partitioned Placement Grouping is similar to Spread placement grouping, but differs because you can have multiple EC2 instances within a single partition.
+  - Designed for huge scale parallel processing systems.
+  - **7 Partitions per AZ**
+  - Can span across multiple AZs in the same region
+  - Up to 100s of EC2 instances
+  - The instances in a partition do not share racks with the instances in the other partitions
+  - A partition failure can affect many EC2 but won’t affect other partitions
+  - EC2 instances get access to the partition information as metadata
+  - Great for topology aware applications like HDFS, HBASE and Cassandra.
+  - Instances can be placed in a specific partition
+
+**Elastic Network Interfaces (ENI)**
+- elastic network interface is a logical networking component in a VPC that represents a virtual network card.
+- Each instance has a default network interface, called the primary network interface. You cannot detach a primary network interface from an instance.
+- ENI is used mainly for low-budget, high-availability network solutions. However, if you suspect you need high network throughput then you can use Enhanced Networking ENI.
+- Enhanced Networking ENI uses single root I/O virtualization to provide high-performance networking capabilities on supported instance types. 
+- SR-IOV provides **higher I/O** and **lower throughput** and it ensures **higher bandwidth, higher packet per second (PPS) performance**, and consistently **lower inter-instance latencies**. 
+- No Charge as it is available on most EC2 types
+
+**EC2 Nitro**
+- Underlying Platform for the next generation of EC2 instances
+- New virtualization technology
+- Allows for better performance:
+  - Better networking options (enhanced networking, HPC, IPv6)
+  - Higher Speed EBS (Nitro is necessary for 64,000 EBS IOPS – max 32,000 on non-Nitro)
+- Better underlying security
