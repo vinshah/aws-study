@@ -213,3 +213,18 @@ benefits and limitations of the three placement groups available within AWS :
   - Better networking options (enhanced networking, HPC, IPv6)
   - Higher Speed EBS (Nitro is necessary for 64,000 EBS IOPS – max 32,000 on non-Nitro)
 - Better underlying security
+
+
+### 3. Elastic Block Storage (EBS)
+An EBS (Elastic Block Store) Volume is a network drive you can attachto your instances while they run. It allows you to persist data.
+- Since it is a Network drive, it uses the network to communicate the instance, which means there might be a bit of latency
+- EBS is an Availability zone service. It’s locked to an Availability Zone (AZ). i.e you can attach it to EC2 instance in the same availability zone.
+- In order to move a volume across, you first need to create a snapshot of the volume.
+- EBS replicates within an AZ. Failure of an AZ means failure of a volume
+- An EBS volume can only be attached to one EC2 instance at a time.
+- By default, the root EBS volume is deleted (Delete on Termination attribute is enabled), any other attached EBS volume is not deleted as this attribute is disabled.
+- You can take a backup (snapshot) of your EBS volume at a point in time. it is Not necessary to detach volume to do snapshot, but recommended. You can copy snapshots across AZ or Region
+- EBS volume have a provisioned capacity (size in GBs, and IOPS). You get billed for all the provisioned capacity.
+- EBS Snapshot has 2 features
+  - EBS Snapshot Archive, this allows you to move Snapshot to archive tier that is 75% cheaper however it takes within 24 to 72 hours for restoring the archive
+  - Recycle Bin for EBS Snapshots, where you setup rules to retain deleted snapshots. It allows you to recover them after an accidental deletion.  retention (from 1 day to 1 year)
