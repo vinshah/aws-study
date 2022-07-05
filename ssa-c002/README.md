@@ -222,9 +222,144 @@ An EBS (Elastic Block Store) Volume is a network drive you can attachto your ins
 - In order to move a volume across, you first need to create a snapshot of the volume.
 - EBS replicates within an AZ. Failure of an AZ means failure of a volume
 - An EBS volume can only be attached to one EC2 instance at a time.
+- EBS Volumes offer 99.999% SLA.
 - By default, the root EBS volume is deleted (Delete on Termination attribute is enabled), any other attached EBS volume is not deleted as this attribute is disabled.
 - You can take a backup (snapshot) of your EBS volume at a point in time. it is Not necessary to detach volume to do snapshot, but recommended. You can copy snapshots across AZ or Region
 - EBS volume have a provisioned capacity (size in GBs, and IOPS). You get billed for all the provisioned capacity.
 - EBS Snapshot has 2 features
   - EBS Snapshot Archive, this allows you to move Snapshot to archive tier that is 75% cheaper however it takes within 24 to 72 hours for restoring the archive
   - Recycle Bin for EBS Snapshots, where you setup rules to retain deleted snapshots. It allows you to recover them after an accidental deletion.  retention (from 1 day to 1 year)
+
+**EC2 Instance Store**
+• If you need a high-performance hardware disk, use EC2 Instance Store
+• Better I/O performance
+• Instance Store volume are sometimes called Ephemeral storage because  EC2 Instance Store lose their storage if they’re stopped (ephemeral)
+• Good for buffer / cache / scratch data / temporary content
+• Risk of data loss if hardware fails
+• Backups and Replication are your responsibility. EBS backed instance can be stopped and you will not loose the data on this instance if stopped.
+
+**EBS Volume Types**
+- EBS Volumes come in 6 types
+  - gp2 / gp3 (SSD): **General purpose SSD** volume that balances price and performance for a wide variety of workloads
+  - **io1 / io2 (SSD):** Highest-performance SSD volume for mission-critical low-latency or high-throughput workloads
+  - st1 (HDD): Low cost HDD volume designed for frequently accessed, throughput- intensive workloads
+  - sc1 (HDD): Lowest cost HDD volume designed for less frequently accessed workloads
+  - EBS Volumes are characterized in Size | Throughput | IOPS (I/O Ops Per Sec)
+  - Only gp2/gp3 and io1/io2 can be used as boot volumes
+
+**General Purpose SSD** 1 GiB - 16 TiB
+• Cost effective storage, low-latency
+• System boot volumes, Virtual desktops, Development and test environments
+  • gp3:
+    • Baseline of 3,000 IOPS and throughput of 125 MiB/s
+    • Can increase IOPS up to 16,000 and throughput up to 1000 MiB/s independently
+  • gp2:
+    • Small gp2 volumes can burst IOPS to 3,000
+    • Size of the volume and IOPS are linked, max IOPS is 16,000
+    • 3 IOPS per GB, means at 5,334 GB we are at the max IOPS
+
+**Provisioned IOPS (PIOPS) SSD** 
+• Critical business applications with sustained IOPS performance Or applications that need more than 16,000 IOPS
+• Great for databases workloads (sensitive to storage performance and consistency)
+• io1/io2 (4 GiB - 16 TiB):
+  • Max PIOPS: 64,000 for Nitro EC2 instances & 32,000 for other
+  • Can increase PIOPS independently from storage size
+  • io2 have more durability and more IOPS per GiB (at the same price as io1)
+• io2 Block Express (4 GiB – 64 TiB):
+  • Sub-millisecond latency
+  • Max PIOPS: 256,000 with an IOPS:GiB ratio of 1,000:1
+• Provisioned IOPS supports EBS Multi-attach 
+
+**Hard Disk Drives (HDD) 125 GiB to 16 TiB**  
+- They Cannot be a boot volume
+- Throughput Optimized HDD (st1) 
+  - Big Data, Data Warehouses, Log Processing 
+  - Max throughput 500 MiB/s and max IOPS 500 
+- Cold HDD (sc1): 
+  -  For data that is infrequently accessed 
+  -  Scenarios where **lowest cost is important**
+  -  Max throughput 250 MiB/s – max IOPS 250
+
+**EBS Multi-Attach – io1/io2 family**
+• Attach the same EBS volume to multiple EC2 instances in **e same AZ**
+• Each instance has full read & write permissions to the volume
+• Use case:
+  • Achieve higher application availability in clustered Linux applications (ex: Teradata)
+  • Applications must manage concurrent write operations
+• Must use a file system that’s cluster-aware (not XFS, EX4, etc…)
+
+SSD vs. HDD:
+SSD-backed volumes are built for transactional workloads involving frequent read/write operations, where the dominant performance attribute is IOPS.**Rule of thumb:** Will your workload be IOPS heavy? Plan for SSD.
+HDD-backed volumes are built for large streaming workloads where throughput (measured in MiB/s) is a better performance measure than IOPS. **Rule of thumb:** Will your workload be throughput heavy? Plan for HDD.
+
+**EBS Encryption**
+• When you create an encrypted EBS volume, you get the following:
+  • Data at rest is encrypted inside the volume
+  • All the data in flight moving between the instance and the volume is encrypted
+  • All snapshots are encrypted
+  • All volumes created from the snapshot
+• Encryption and decryption are handled transparently
+• Encryption has a minimal impact on latency
+• EBS Encryption leverages keys from KMS (AES-256)
+• Copying an unencrypted snapshot allows encryption
+• Snapshots of encrypted volumes are encrypted
+- Process
+  - Create an EBS snapshot of the volume
+  - Encrypt the EBS snapshot ( using copy )
+  - Create new ebs volume from the snapshot ( the volume will also be encrypted )
+  - Now you can attach the encrypted volume to the original instance  
+
+**EFS – Elastic File System**
+- Managed NFS (network file system) that can be mounted on many EC2
+- EFS works with EC2 instances in multi-AZ
+- Highly available, scalable, expensive (3x gp2), pay per use
+- Uses NFSv4.1 protocol
+- Uses security group to control access to EFS
+- Compatible with Linux based AMI (not Windows)
+- Encryption at rest using KMS
+- POSIX file system (~Linux) that has a standard file API
+- File system scales automatically, pay-per-use, no capacity planning!
+
+**Amazon Machine Image (AMI) Overview**
+- It is a customization of an EC2 instance i.e. You add your own software, configuration, operating system, monitoring
+- It enables Faster boot / configuration time because all your software is pre-packaged
+- They are built for a specific region (and AMI can be **copied** across regions)
+- An EC2 instances can be launched from:
+  - A Public AMI: AWS provided
+  - Your own AMI: you make and maintain them yourself
+  - An AWS Marketplace AMI: an AMI someone else made (and potentially sells)
+- AMI Process (from an EC2 instance)
+  - Start an EC2 instance and customize it
+  - Stop the instance (for data integrity)
+  - Build an AMI – this will also create EBS snapshots
+  - Launch instances from other AMIs
+
+**Security Groups**
+- Security Groups are the fundamental of network security in AWS. They control how traffic is allowed into or out of our EC2 Instances.
+- Security groups only contain rules
+- Security groups rules can reference by IP or by security group
+- Security groups are acting as a “firewall” on EC2 instances, They regulate: 
+  - Access to Ports 
+  - Authorised IP ranges – IPv4 and IPv6 
+  - Control of inbound network (from other to the instance)
+  - Control of outbound network (from the instance to other
+- Security Group can be attached to multiple instances
+- Security group are Locked down to a region / VPC combination
+- Security Group live “outside” the EC2 – if traffic is blocked the EC2 instance won’t see it
+- _It’s good to maintain one separate security group for SSH acces_
+- If your application is **not accessible (time out), then it’s a security group** issue
+- If your application gives a **“connection refused“ error, then it’s an application error** or it’s not launched
+- All **inbound** traffic is **blocked by default**
+- All **outbound** traffic is authorised by default
+
+**Classic Ports to know**
+• 22 = SSH (Secure Shell) - log into a Linux instance
+• 21 = FTP (File Transfer Protocol) – upload files into a file share
+• 22 = SFTP (Secure File Transfer Protocol) – upload files using SSH
+• 80 = HTTP – access unsecured websites
+• 443 = HTTPS – access secured websites
+• 3389 = RDP (Remote Desktop Protocol) – log into a Windows instance
+
+
+
+When using an Application Load Balancer to distribute traffic to your EC2 instances, the IP address you'll receive requests from will be the ALB's private IP addresses. To get the client's IP address, ALB adds an additional header called "X-Forwarded-For" contains the client's IP address.
