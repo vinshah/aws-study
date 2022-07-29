@@ -3,9 +3,9 @@
 ### 1. Identity Access Management (IAM)
 
 - IAM is a **Global Service**. 
-- Root account is created when you setup AWS account and has completed ADMIN access.
-- New USER have now permission when created. In AWS you apply least privilage principle i.e. dont give user more permission than the user needs.
-- You have 3 options to access AWS 
+- Root account is created when you setup AWS account and has complete ADMIN access.
+- New USER have now permission when created. In AWS you apply _least privilage principle_ i.e. dont give user more permission than the user needs.
+- 3 options to access AWS 
   1. AWS Management Console (protected by password + MFA)
   2. AWS Command Line Interface (CLI): protected by access keys
   3. AWS Software Developer Kit (SDK) - for code: protected by access keys
